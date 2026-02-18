@@ -14,7 +14,7 @@ The platform supports four primary actors:
 ---
 
 ```mermaid
-flowchart TB
+flowchart LR
 
 %% Actors
 User((User))
@@ -26,6 +26,7 @@ Admin((Admin))
 subgraph ChangeEnv_System
 
 %% User Use Cases
+subgraph User_Functions
 UC1([Register / Login])
 UC2([Log Eco Action])
 UC3([View Carbon Impact])
@@ -34,22 +35,29 @@ UC5([Sell Green Credits])
 UC6([Redeem Credits])
 UC7([Participate in Challenge])
 UC8([View Transaction History])
+end
 
 %% Organization Use Cases
+subgraph Organization_Functions
 OC1([Create Challenge])
 OC2([Manage Challenge])
 OC3([View Challenge Analytics])
+end
 
 %% Business Use Cases
+subgraph Business_Functions
 BC1([Purchase Green Credits])
 BC2([Generate Offset Certificate])
 BC3([View Purchase History])
+end
 
 %% Admin Use Cases
+subgraph Admin_Functions
 AC1([Review Flagged Actions])
 AC2([Approve / Reject Action])
 AC3([Manage Users])
 AC4([Monitor Platform Analytics])
+end
 
 end
 
@@ -63,17 +71,14 @@ User --> UC6
 User --> UC7
 User --> UC8
 
-Organization --> UC1
 Organization --> OC1
 Organization --> OC2
 Organization --> OC3
 
-Business --> UC1
 Business --> BC1
 Business --> BC2
 Business --> BC3
 
-Admin --> UC1
 Admin --> AC1
 Admin --> AC2
 Admin --> AC3
