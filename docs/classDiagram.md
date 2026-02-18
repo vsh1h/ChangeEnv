@@ -18,17 +18,23 @@ It demonstrates:
 classDiagram
 direction TB
 
-%% USER CORE (Top Center)
+%% =====================================================
+%% USER CORE (TOP CENTER)
+%% =====================================================
+
 class User {
   +UUID id
   +String name
   +String email
   +Role role
   +login()
+  +logout()
 }
 
 class Admin {
   +reviewFlaggedAction()
+  +approveAction()
+  +rejectAction()
   +manageUsers()
 }
 
@@ -46,11 +52,40 @@ User <|-- Admin
 User <|-- Organization
 User <|-- Business
 
-%% MARKETPLACE (Left Wing)
+
+%% =====================================================
+%% WALLET & TRANSACTIONS (CENTER SPINE)
+%% =====================================================
+
+class Wallet {
+  +float balance
+  +credit(amount)
+  +debit(amount)
+  +getTransactionHistory()
+}
+
+class Transaction {
+  +UUID transactionId
+  +float amount
+  +String type
+  +DateTime timestamp
+}
+
+User "1" --> "1" Wallet
+Wallet "1" --> "*" Transaction
+
+
+%% =====================================================
+%% MARKETPLACE MODULE (LEFT WING – STATE PATTERN)
+%% =====================================================
+
 class MarketplaceOrder {
   +UUID orderId
   +float amount
+  +OrderState state
   +execute()
+  +cancel()
+  +setState(state)
 }
 
 class OrderState {
@@ -58,29 +93,36 @@ class OrderState {
   +handle(order)
 }
 
+class CreatedState {
+  +handle(order)
+}
+
+class CompletedState {
+  +handle(order)
+}
+
+class CancelledState {
+  +handle(order)
+}
+
 MarketplaceOrder --> OrderState
 OrderState <|.. CreatedState
 OrderState <|.. CompletedState
+OrderState <|.. CancelledState
+
 Business "1" -- "*" MarketplaceOrder : buyer
 MarketplaceOrder "*" -- "1" User : seller
 
-%% WALLET & TRANSACTIONS (Center Spine)
-class Wallet {
-  +float balance
-  +credit(amount)
-}
 
-class Transaction {
-  +UUID transactionId
-  +float amount
-}
+%% =====================================================
+%% ECO ACTION MODULE (RIGHT WING – STRATEGY PATTERN)
+%% =====================================================
 
-User "1" --> "1" Wallet
-Wallet "1" --> "*" Transaction
-
-%% ECO ACTIONS & GOVERNANCE (Right Wing)
 class EcoAction {
   +UUID actionId
+  +String type
+  +float quantity
+  +CarbonStrategy strategy
   +calculateImpact()
 }
 
@@ -89,15 +131,47 @@ class CarbonStrategy {
   +calculateImpact(quantity)
 }
 
+class TransportStrategy {
+  +calculateImpact(quantity)
+}
+
+class EnergyStrategy {
+  +calculateImpact(quantity)
+}
+
+class TreePlantStrategy {
+  +calculateImpact(quantity)
+}
+
 EcoAction --> CarbonStrategy
 CarbonStrategy <|.. TransportStrategy
 CarbonStrategy <|.. EnergyStrategy
+CarbonStrategy <|.. TreePlantStrategy
+
 User "1" --> "*" EcoAction : logs
+
+
+%% =====================================================
+%% GOVERNANCE (BOTTOM RIGHT)
+%% =====================================================
+
+class Challenge {
+  +UUID challengeId
+  +String title
+  +float targetAmount
+  +String status
+  +addParticipant()
+  +calculateProgress()
+}
 
 class FraudReport {
   +UUID reportId
   +String status
+  +review()
 }
 
-EcoAction "1" -- "1" FraudReport
-Admin "1" -- "*" FraudReport : reviews
+Organization "1" --> "*" Challenge : creates
+User "1" --> "*" Challenge : participates
+
+EcoAction "1" --> "0..1" FraudReport : may_generate
+Admin "1" --> "*" FraudReport : reviews
