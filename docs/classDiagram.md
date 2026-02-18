@@ -18,10 +18,9 @@ It demonstrates:
 classDiagram
 direction TB
 
-%% =========================
-%% USER CORE (CENTER)
-%% =========================
-
+%% ---------------------------------------------------------
+%% 1. USER HIERARCHY (Top Center)
+%% ---------------------------------------------------------
 class User {
   +UUID id
   +String name
@@ -30,6 +29,13 @@ class User {
   +Role role
   +login()
   +logout()
+}
+
+class Admin {
+  +reviewFlaggedAction()
+  +approveAction()
+  +rejectAction()
+  +manageUsers()
 }
 
 class Organization {
@@ -42,22 +48,14 @@ class Business {
   +viewCertificates()
 }
 
-class Admin {
-  +reviewFlaggedAction()
-  +approveAction()
-  +rejectAction()
-  +manageUsers()
-}
-
+%% Inheritance stems from a single point to reduce lines
+User <|-- Admin
 User <|-- Organization
 User <|-- Business
-User <|-- Admin
 
-
-%% =========================
-%% WALLET (DIRECTLY BELOW USER)
-%% =========================
-
+%% ---------------------------------------------------------
+%% 2. WALLET SYSTEM (Direct Vertical Flow)
+%% ---------------------------------------------------------
 class Wallet {
   +float balance
   +credit(amount)
@@ -72,14 +70,12 @@ class Transaction {
   +DateTime timestamp
 }
 
-User --> Wallet
-Wallet --> Transaction
+User "1" --> "1" Wallet : has
+Wallet "1" --> "*" Transaction : logs
 
-
-%% =========================
-%% MARKETPLACE (LEFT SIDE)
-%% =========================
-
+%% ---------------------------------------------------------
+%% 3. MARKETPLACE ISLAND (Left Side)
+%% ---------------------------------------------------------
 class MarketplaceOrder {
   +UUID orderId
   +float amount
@@ -94,34 +90,18 @@ class OrderState {
   +handle(order: MarketplaceOrder)
 }
 
-class CreatedState {
-  +handle(order)
-  +validateOrder()
-}
-
-class CompletedState {
-  +handle(order)
-  +generateCertificate()
-}
-
-class CancelledState {
-  +handle(order)
-  +refundCredits()
-}
-
 OrderState <|.. CreatedState
 OrderState <|.. CompletedState
 OrderState <|.. CancelledState
 
 MarketplaceOrder --> OrderState
-MarketplaceOrder --> User : seller
-MarketplaceOrder --> Business : buyer
+%% Buyer and Seller links grouped to the left
+Business "1" -- "*" MarketplaceOrder : buyer
+MarketplaceOrder "*" -- "1" User : seller
 
-
-%% =========================
-%% ECO ACTION (RIGHT SIDE)
-%% =========================
-
+%% ---------------------------------------------------------
+%% 4. ECO-ACTION & GOVERNANCE (Right Side)
+%% ---------------------------------------------------------
 class EcoAction {
   +UUID actionId
   +String type
@@ -135,30 +115,25 @@ class CarbonStrategy {
   +calculateImpact(quantity: float)
 }
 
-class TransportStrategy {
-  +calculateImpact(quantity)
-}
-
-class EnergyStrategy {
-  +calculateImpact(quantity)
-}
-
-class TreePlantStrategy {
-  +calculateImpact(quantity)
-}
-
 CarbonStrategy <|.. TransportStrategy
 CarbonStrategy <|.. EnergyStrategy
 CarbonStrategy <|.. TreePlantStrategy
 
 EcoAction --> CarbonStrategy
-User --> EcoAction
+User "1" --> "*" EcoAction : logs
 
+class FraudReport {
+  +UUID reportId
+  +String status
+  +review()
+}
 
-%% =========================
-%% GOVERNANCE (BOTTOM RIGHT)
-%% =========================
+EcoAction "1" -- "1" FraudReport : generates
+Admin "1" -- "*" FraudReport : reviews
 
+%% ---------------------------------------------------------
+%% 5. CHALLENGE SYSTEM (Bottom)
+%% ---------------------------------------------------------
 class Challenge {
   +UUID challengeId
   +String title
@@ -168,13 +143,5 @@ class Challenge {
   +calculateProgress()
 }
 
-class FraudReport {
-  +UUID reportId
-  +String status
-  +review()
-}
-
-Organization --> Challenge
-User --> Challenge
-EcoAction --> FraudReport
-Admin --> FraudReport
+Organization "1" -- "*" Challenge : sponsors
+User "*" -- "*" Challenge : participates
