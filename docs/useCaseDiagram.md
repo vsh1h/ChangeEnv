@@ -23,7 +23,7 @@ Business([Business])
 Admin([Admin])
 
 %% System Boundary
-subgraph ChangeEnv – Green Credit Economy Platform
+subgraph ChangeEnv_System
 
 %% User Use Cases
 UC1((Register / Login))
@@ -47,7 +47,7 @@ BC3((View Purchase History))
 
 %% Admin Use Cases
 AC1((Review Flagged Actions))
-AC2((Approve / Reject Action))
+AC2((Approve or Reject Action))
 AC3((Manage Users))
 AC4((Monitor Platform Analytics))
 
