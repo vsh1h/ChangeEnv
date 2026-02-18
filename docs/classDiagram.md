@@ -6,10 +6,11 @@ This class diagram represents the core domain model of the ChangeEnv – Green C
 
 It demonstrates:
 
-- Entity relationships
-- OOP principles
+- Inheritance (User hierarchy)
+- Composition (Wallet & Transactions)
 - Strategy Pattern (Carbon Calculation)
 - State Pattern (Marketplace Order Lifecycle)
+- Core entity relationships
 
 ---
 
@@ -17,15 +18,15 @@ It demonstrates:
 classDiagram
 
 %% =========================
-%% Core User Hierarchy
+%% USER HIERARCHY
 %% =========================
 
 class User {
-  +id: UUID
-  +name: String
-  +email: String
-  +password: String
-  +role: Role
+  +UUID id
+  +String name
+  +String email
+  +String password
+  +Role role
   +login()
   +logout()
 }
@@ -52,44 +53,127 @@ User <|-- Business
 User <|-- Admin
 
 %% =========================
-%% Wallet System
+%% WALLET SYSTEM
 %% =========================
 
 class Wallet {
-  +balance: float
-  +debit(amount)
+  +float balance
   +credit(amount)
+  +debit(amount)
+  +getTransactionHistory()
 }
 
 class Transaction {
-  +transactionId: UUID
-  +amount: float
-  +type: String
-  +timestamp: DateTime
+  +UUID transactionId
+  +float amount
+  +String type
+  +DateTime timestamp
 }
 
 User "1" --> "1" Wallet
 Wallet "1" --> "*" Transaction
 
 %% =========================
-%% Marketplace Module
+%% MARKETPLACE MODULE (STATE PATTERN)
 %% =========================
 
 class MarketplaceOrder {
-  +orderId: UUID
-  +amount: float
-  +state: OrderState
+  +UUID orderId
+  +float amount
+  +OrderState state
   +execute()
   +cancel()
+  +setState(state)
 }
 
 class OrderState {
   <<interface>>
-  +handle()
+  +handle(order: MarketplaceOrder)
 }
 
-class CreatedState
-class CompletedState
-class CancelledState
+class CreatedState {
+  +handle(order)
+  +validateOrder()
+}
 
-OrderState <|.. CreatedS
+class CompletedState {
+  +handle(order)
+  +generateCertificate()
+}
+
+class CancelledState {
+  +handle(order)
+  +refundCredits()
+}
+
+OrderState <|.. CreatedState
+OrderState <|.. CompletedState
+OrderState <|.. CancelledState
+
+MarketplaceOrder --> OrderState
+MarketplaceOrder --> User : seller
+MarketplaceOrder --> Business : buyer
+
+%% =========================
+%% ECO ACTION MODULE (STRATEGY PATTERN)
+%% =========================
+
+class EcoAction {
+  +UUID actionId
+  +String type
+  +float quantity
+  +CarbonStrategy strategy
+  +calculateImpact()
+}
+
+class CarbonStrategy {
+  <<interface>>
+  +calculateImpact(quantity: float)
+}
+
+class TransportStrategy {
+  +calculateImpact(quantity)
+}
+
+class EnergyStrategy {
+  +calculateImpact(quantity)
+}
+
+class TreePlantStrategy {
+  +calculateImpact(quantity)
+}
+
+CarbonStrategy <|.. TransportStrategy
+CarbonStrategy <|.. EnergyStrategy
+CarbonStrategy <|.. TreePlantStrategy
+
+EcoAction --> CarbonStrategy
+
+%% =========================
+%% CHALLENGE MODULE
+%% =========================
+
+class Challenge {
+  +UUID challengeId
+  +String title
+  +float targetAmount
+  +String status
+  +addParticipant()
+  +calculateProgress()
+}
+
+Organization --> Challenge
+User --> Challenge
+
+%% =========================
+%% FRAUD MONITORING
+%% =========================
+
+class FraudReport {
+  +UUID reportId
+  +String status
+  +review()
+}
+
+Admin --> FraudReport
+EcoAction --> FraudReport
