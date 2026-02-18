@@ -16,10 +16,10 @@ It demonstrates:
 
 ```mermaid
 classDiagram
-direction LR
+direction TB
 
 %% =========================
-%% USER HIERARCHY
+%% USER CORE (CENTER)
 %% =========================
 
 class User {
@@ -55,7 +55,7 @@ User <|-- Admin
 
 
 %% =========================
-%% WALLET SYSTEM
+%% WALLET (DIRECTLY BELOW USER)
 %% =========================
 
 class Wallet {
@@ -72,12 +72,12 @@ class Transaction {
   +DateTime timestamp
 }
 
-User "1" --> "1" Wallet
-Wallet "1" --> "*" Transaction
+User --> Wallet
+Wallet --> Transaction
 
 
 %% =========================
-%% MARKETPLACE MODULE
+%% MARKETPLACE (LEFT SIDE)
 %% =========================
 
 class MarketplaceOrder {
@@ -119,7 +119,7 @@ MarketplaceOrder --> Business : buyer
 
 
 %% =========================
-%% ECO ACTION MODULE
+%% ECO ACTION (RIGHT SIDE)
 %% =========================
 
 class EcoAction {
@@ -152,10 +152,11 @@ CarbonStrategy <|.. EnergyStrategy
 CarbonStrategy <|.. TreePlantStrategy
 
 EcoAction --> CarbonStrategy
+User --> EcoAction
 
 
 %% =========================
-%% CHALLENGE & FRAUD
+%% GOVERNANCE (BOTTOM RIGHT)
 %% =========================
 
 class Challenge {
