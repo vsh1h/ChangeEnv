@@ -18,11 +18,9 @@ It demonstrates:
 classDiagram
 direction LR
 
-%% =====================================================
-%% USER & WALLET MODULE
-%% =====================================================
-
-namespace UserModule {
+%% =========================
+%% USER HIERARCHY
+%% =========================
 
 class User {
   +UUID id
@@ -51,6 +49,15 @@ class Admin {
   +manageUsers()
 }
 
+User <|-- Organization
+User <|-- Business
+User <|-- Admin
+
+
+%% =========================
+%% WALLET SYSTEM
+%% =========================
+
 class Wallet {
   +float balance
   +credit(amount)
@@ -65,20 +72,13 @@ class Transaction {
   +DateTime timestamp
 }
 
-User <|-- Organization
-User <|-- Business
-User <|-- Admin
-
 User "1" --> "1" Wallet
 Wallet "1" --> "*" Transaction
 
-}
 
-%% =====================================================
-%% MARKETPLACE MODULE (STATE PATTERN)
-%% =====================================================
-
-namespace MarketplaceModule {
+%% =========================
+%% MARKETPLACE MODULE
+%% =========================
 
 class MarketplaceOrder {
   +UUID orderId
@@ -117,13 +117,10 @@ MarketplaceOrder --> OrderState
 MarketplaceOrder --> User : seller
 MarketplaceOrder --> Business : buyer
 
-}
 
-%% =====================================================
-%% ECO ACTION MODULE (STRATEGY PATTERN)
-%% =====================================================
-
-namespace EcoActionModule {
+%% =========================
+%% ECO ACTION MODULE
+%% =========================
 
 class EcoAction {
   +UUID actionId
@@ -156,13 +153,10 @@ CarbonStrategy <|.. TreePlantStrategy
 
 EcoAction --> CarbonStrategy
 
-}
 
-%% =====================================================
-%% GOVERNANCE MODULE (CHALLENGE & FRAUD)
-%% =====================================================
-
-namespace GovernanceModule {
+%% =========================
+%% CHALLENGE & FRAUD
+%% =========================
 
 class Challenge {
   +UUID challengeId
@@ -183,5 +177,3 @@ Organization --> Challenge
 User --> Challenge
 EcoAction --> FraudReport
 Admin --> FraudReport
-
-}
