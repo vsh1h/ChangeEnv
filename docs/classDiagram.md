@@ -16,10 +16,13 @@ It demonstrates:
 
 ```mermaid
 classDiagram
+direction LR
 
-%% =========================
-%% USER HIERARCHY
-%% =========================
+%% =====================================================
+%% USER & WALLET MODULE
+%% =====================================================
+
+namespace UserModule {
 
 class User {
   +UUID id
@@ -48,14 +51,6 @@ class Admin {
   +manageUsers()
 }
 
-User <|-- Organization
-User <|-- Business
-User <|-- Admin
-
-%% =========================
-%% WALLET SYSTEM
-%% =========================
-
 class Wallet {
   +float balance
   +credit(amount)
@@ -70,12 +65,20 @@ class Transaction {
   +DateTime timestamp
 }
 
+User <|-- Organization
+User <|-- Business
+User <|-- Admin
+
 User "1" --> "1" Wallet
 Wallet "1" --> "*" Transaction
 
-%% =========================
+}
+
+%% =====================================================
 %% MARKETPLACE MODULE (STATE PATTERN)
-%% =========================
+%% =====================================================
+
+namespace MarketplaceModule {
 
 class MarketplaceOrder {
   +UUID orderId
@@ -114,9 +117,13 @@ MarketplaceOrder --> OrderState
 MarketplaceOrder --> User : seller
 MarketplaceOrder --> Business : buyer
 
-%% =========================
+}
+
+%% =====================================================
 %% ECO ACTION MODULE (STRATEGY PATTERN)
-%% =========================
+%% =====================================================
+
+namespace EcoActionModule {
 
 class EcoAction {
   +UUID actionId
@@ -149,9 +156,13 @@ CarbonStrategy <|.. TreePlantStrategy
 
 EcoAction --> CarbonStrategy
 
-%% =========================
-%% CHALLENGE MODULE
-%% =========================
+}
+
+%% =====================================================
+%% GOVERNANCE MODULE (CHALLENGE & FRAUD)
+%% =====================================================
+
+namespace GovernanceModule {
 
 class Challenge {
   +UUID challengeId
@@ -162,18 +173,15 @@ class Challenge {
   +calculateProgress()
 }
 
-Organization --> Challenge
-User --> Challenge
-
-%% =========================
-%% FRAUD MONITORING
-%% =========================
-
 class FraudReport {
   +UUID reportId
   +String status
   +review()
 }
 
-Admin --> FraudReport
+Organization --> Challenge
+User --> Challenge
 EcoAction --> FraudReport
+Admin --> FraudReport
+
+}
