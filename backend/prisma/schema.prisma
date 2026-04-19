@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TransactionType {
+  EARN
+  SPEND
+  SELL
+}
+
+enum EcoActionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                      String                   @id @default(uuid())
+  name                    String
+  email                   String                   @unique
+  password                String
+  role                    String
+  wallet                  Wallet?
+  ecoActions              EcoAction[]
+  soldMarketplaceOrders   MarketplaceOrder[]       @relation("SellerOrders")
+  boughtMarketplaceOrders MarketplaceOrder[]       @relation("BuyerOrders")
+  createdChallenges       Challenge[]              @relation("OrganizationChallenges")
+  challengeParticipations ChallengeParticipation[]
+  reviewedFraudReports    FraudReport[]            @relation("FraudReviewer")
+
+  @@map("users")
+}
+
+model Wallet {
+  id           String        @id @default(uuid())
+  userId       String        @unique @map("user_id")
+  balance      Float         @default(0)
+  user         User          @relation(fields: [userId], references: [id])
+  transactions Transaction[]
+
+  @@map("wallets")
+}
+
+model Transaction {
+  id        String          @id @default(uuid())
+  walletId  String          @map("wallet_id")
+  amount    Float
+  type      TransactionType
+  timestamp DateTime        @default(now())
+  wallet    Wallet          @relation(fields: [walletId], references: [id])
+
+  @@map("transactions")
+}
+
+model EcoAction {
+  id           String          @id @default(uuid())
+  userId       String          @map("user_id")
+  type         String
+  quantity     Float
+  carbonImpact Float           @default(0) @map("carbon_impact")
+  status       EcoActionStatus @default(PENDING)
+  createdAt    DateTime        @default(now()) @map("created_at")
+  user         User            @relation(fields: [userId], references: [id])
+  fraudReports FraudReport[]
+
+  @@map("eco_actions")
+}
+
+model MarketplaceOrder {
+  id        String   @id @default(uuid())
+  sellerId  String   @map("seller_id")
+  buyerId   String   @map("buyer_id")
+  amount    Float
+  state     String
+  createdAt DateTime @default(now()) @map("created_at")
+  seller    User     @relation("SellerOrders", fields: [sellerId], references: [id])
+  buyer     User     @relation("BuyerOrders", fields: [buyerId], references: [id])
+
+  @@map("marketplace_orders")
+}
+
+model Challenge {
+  id             String                   @id @default(uuid())
+  organizationId String                   @map("organization_id")
+  title          String
+  targetAmount   Float                    @map("target_amount")
+  status         String
+  organization   User                     @relation("OrganizationChallenges", fields: [organizationId], references: [id])
+  participations ChallengeParticipation[]
+
+  @@map("challenges")
+}
+
+model ChallengeParticipation {
+  id          String    @id @default(uuid())
+  challengeId String    @map("challenge_id")
+  userId      String    @map("user_id")
+  progress    Float
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+
+  @@map("challenge_participations")
+}
+
+model FraudReport {
+  id          String    @id @default(uuid())
+  ecoActionId String    @map("eco_action_id")
+  reviewedBy  String    @map("reviewed_by")
+  status      String
+  reason      String
+  reviewedAt  DateTime? @map("reviewed_at")
+  ecoAction   EcoAction @relation(fields: [ecoActionId], references: [id])
+  reviewer    User      @relation("FraudReviewer", fields: [reviewedBy], references: [id])
+
+  @@map("fraud_reports")
+}
